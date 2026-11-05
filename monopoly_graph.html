@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Monopoly Graph</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f8f9fa; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+  .container { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 30px; max-width: 750px; width: 100%; }
+  h2 { text-align: center; color: #2c3e50; margin-bottom: 5px; }
+  h3 { text-align: center; color: #7f8c8d; font-weight: normal; margin-top: 0; margin-bottom: 20px; font-size: 14px; }
+  canvas { display: block; margin: 0 auto; }
+  .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 20px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .legend-color { width: 30px; height: 4px; border-radius: 2px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
+  .stat-box { background: #f8f9fa; border-radius: 8px; padding: 10px; text-align: center; border: 1px solid #e0e0e0; }
+  .stat-label { font-size: 11px; color: #7f8c8d; margin-bottom: 4px; }
+  .stat-value { font-size: 18px; font-weight: bold; color: #2c3e50; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Monopoly Equilibrium</h2>
+  <h3>Demand: P = 8 − 0.5q &nbsp;|&nbsp; C(q) = 10 + 0.5q² &nbsp;|&nbsp; MC = q &nbsp;|&nbsp; MR = 8 − q</h3>
+  <canvas id="graph" width="680" height="440"></canvas>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#e74c3c"></div> Demand (D)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#e67e22"></div> Marginal Revenue (MR)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#27ae60"></div> Marginal Cost (MC)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#3498db; height:12px; border-radius:2px;"></div> CS</div>
+    <div class="legend-item"><div class="legend-color" style="background:#f39c12; height:12px; border-radius:2px;"></div> PS</div>
+    <div class="legend-item"><div class="legend-color" style="background:#95a5a6; height:12px; border-radius:2px;"></div> DWL</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-box">
+      <div class="stat-label">q*</div>
+      <div class="stat-value" style="color:#2c3e50">4</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">P*</div>
+      <div class="stat-value" style="color:#e74c3c">6</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">CS</div>
+      <div class="stat-value" style="color:#3498db">4</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">PS</div>
+      <div class="stat-value" style="color:#f39c12">16</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">π (profit)</div>
+      <div class="stat-value" style="color:#8e44ad">6</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">MC at q*</div>
+      <div class="stat-value" style="color:#27ae60">4</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Lerner Index</div>
+      <div class="stat-value" style="color:#e67e22">1/3</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">εD</div>
+      <div class="stat-value" style="color:#c0392b">−3</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('graph');
+const ctx = canvas.getContext('2d');
+
+// Graph settings
+const margin = { left: 60, right: 30, top: 30, bottom: 50 };
+const w = canvas.width - margin.left - margin.right;
+const h = canvas.height - margin.top - margin.bottom;
+
+const xMax = 9;
+const yMax = 9;
+
+function toX(q) { return margin.left + (q / xMax) * w; }
+function toY(p) { return margin.top + h - (p / yMax) * h; }
+
+// ---- SHADING ----
+
+// CS: triangle under Demand, above P*, from 0 to q*
+ctx.beginPath();
+ctx.moveTo(toX(0), toY(8));   // top of demand at q=0
+ctx.lineTo(toX(4), toY(6));   // q*, P*
+ctx.lineTo(toX(0), toY(6));   // back to P* on y-axis
+ctx.closePath();
+ctx.fillStyle = 'rgba(52, 152, 219, 0.35)';
+ctx.fill();
+
+// PS: area above MC, below P*, from 0 to q*
+ctx.beginPath();
+ctx.moveTo(toX(0), toY(6));   // P* on y-axis
+ctx.lineTo(toX(4), toY(6));   // q*, P*
+ctx.lineTo(toX(4), toY(4));   // q*, MC(q*)
+ctx.lineTo(toX(0), toY(0));   // MC at q=0
+ctx.closePath();
+ctx.fillStyle = 'rgba(243, 156, 18, 0.35)';
+ctx.fill();
+
+// DWL: triangle between q* and competitive q (16/3 ≈ 5.33)
+// between Demand and MC from q*=4 to q_c=5.33
+ctx.beginPath();
+ctx.moveTo(toX(4), toY(6));           // monopoly point on demand
+ctx.lineTo(toX(16/3), toY(16/3));     // competitive equilibrium
+ctx.lineTo(toX(4), toY(4));           // monopoly point on MC
+ctx.closePath();
+ctx.fillStyle = 'rgba(149, 165, 166, 0.5)';
+ctx.fill();
+
+// Profit rectangle: between P* and AC(q*)
+// AC(4) = C(4)/4 = (10 + 0.5*16)/4 = 18/4 = 4.5
+ctx.beginPath();
+ctx.moveTo(toX(0), toY(6));
+ctx.lineTo(toX(4), toY(6));
+ctx.lineTo(toX(4), toY(4.5));
+ctx.lineTo(toX(0), toY(4.5));
+ctx.closePath();
+ctx.fillStyle = 'rgba(155, 89, 182, 0.15)';
+ctx.fill();
+ctx.strokeStyle = 'rgba(155, 89, 182, 0.5)';
+ctx.setLineDash([4, 4]);
+ctx.lineWidth = 1;
+ctx.strokeRect(toX(0), toY(6), toX(4)-toX(0), toY(4.5)-toY(6));
+ctx.setLineDash([]);
+
+// ---- AXES ----
+ctx.strokeStyle = '#2c3e50';
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.moveTo(margin.left, margin.top);
+ctx.lineTo(margin.left, margin.top + h);
+ctx.lineTo(margin.left + w, margin.top + h);
+ctx.stroke();
+
+// Axis labels
+ctx.fillStyle = '#2c3e50';
+ctx.font = 'bold 14px Arial';
+ctx.fillText('P', margin.left - 20, margin.top + 5);
+ctx.fillText('Q', margin.left + w + 5, margin.top + h + 5);
+
+// Y-axis ticks
+ctx.font = '12px Arial';
+ctx.textAlign = 'right';
+for (let p = 0; p <= 8; p += 2) {
+  const y = toY(p);
+  ctx.beginPath();
+  ctx.moveTo(margin.left - 5, y);
+  ctx.lineTo(margin.left, y);
+  ctx.stroke();
+  ctx.fillText(p, margin.left - 8, y + 4);
+}
+
+// X-axis ticks
+ctx.textAlign = 'center';
+for (let q = 0; q <= 8; q += 2) {
+  const x = toX(q);
+  ctx.beginPath();
+  ctx.moveTo(x, margin.top + h);
+  ctx.lineTo(x, margin.top + h + 5);
+  ctx.stroke();
+  ctx.fillText(q, x, margin.top + h + 18);
+}
+
+// ---- CURVES ----
+
+// Demand: P = 8 - 0.5q
+ctx.beginPath();
+ctx.strokeStyle = '#e74c3c';
+ctx.lineWidth = 2.5;
+ctx.moveTo(toX(0), toY(8));
+ctx.lineTo(toX(8), toY(4));
+ctx.stroke();
+
+// MR: P = 8 - q
+ctx.beginPath();
+ctx.strokeStyle = '#e67e22';
+ctx.lineWidth = 2.5;
+ctx.moveTo(toX(0), toY(8));
+ctx.lineTo(toX(8), toY(0));
+ctx.stroke();
+
+// MC: P = q
+ctx.beginPath();
+ctx.strokeStyle = '#27ae60';
+ctx.lineWidth = 2.5;
+ctx.moveTo(toX(0), toY(0));
+ctx.lineTo(toX(8), toY(8));
+ctx.stroke();
+
+// ---- DASHED LINES ----
+ctx.setLineDash([6, 4]);
+ctx.lineWidth = 1.5;
+
+// Vertical at q*=4
+ctx.strokeStyle = '#7f8c8d';
+ctx.beginPath();
+ctx.moveTo(toX(4), toY(0));
+ctx.lineTo(toX(4), toY(6));
+ctx.stroke();
+
+// Horizontal at P*=6
+ctx.beginPath();
+ctx.moveTo(toX(0), toY(6));
+ctx.lineTo(toX(4), toY(6));
+ctx.stroke();
+
+// Horizontal at MC(q*)=4
+ctx.beginPath();
+ctx.moveTo(toX(0), toY(4));
+ctx.lineTo(toX(4), toY(4));
+ctx.stroke();
+
+// Horizontal at AC(q*)=4.5
+ctx.strokeStyle = '#9b59b6';
+ctx.beginPath();
+ctx.moveTo(toX(0), toY(4.5));
+ctx.lineTo(toX(4), toY(4.5));
+ctx.stroke();
+
+// Vertical at q_c = 16/3
+ctx.strokeStyle = '#bdc3c7';
+ctx.beginPath();
+ctx.moveTo(toX(16/3), toY(0));
+ctx.lineTo(toX(16/3), toY(16/3));
+ctx.stroke();
+
+ctx.setLineDash([]);
+
+// ---- KEY POINTS ----
+
+function dot(x, y, color, r=5) {
+  ctx.beginPath();
+  ctx.arc(toX(x), toY(y), r, 0, Math.PI*2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+dot(4, 6, '#e74c3c');     // monopoly point on demand
+dot(4, 4, '#27ae60');     // MR=MC intersection
+dot(16/3, 16/3, '#95a5a6'); // competitive equilibrium
+
+// ---- LABELS ----
+ctx.font = 'bold 13px Arial';
+ctx.textAlign = 'left';
+
+// Curve labels
+ctx.fillStyle = '#e74c3c';
+ctx.fillText('D', toX(8) + 5, toY(4) + 5);
+
+ctx.fillStyle = '#e67e22';
+ctx.fillText('MR', toX(7.5) + 5, toY(0.5) + 5);
+
+ctx.fillStyle = '#27ae60';
+ctx.fillText('MC', toX(8) + 5, toY(8) + 5);
+
+// Price labels on Y-axis
+ctx.textAlign = 'right';
+ctx.font = 'bold 12px Arial';
+
+ctx.fillStyle = '#e74c3c';
+ctx.fillText('P*=6', margin.left - 8, toY(6) + 4);
+
+ctx.fillStyle = '#27ae60';
+ctx.fillText('MC=4', margin.left - 8, toY(4) + 4);
+
+ctx.fillStyle = '#9b59b6';
+ctx.fillText('AC=4.5', margin.left - 8, toY(4.5) + 4);
+
+ctx.fillStyle = '#2c3e50';
+ctx.fillText('8', margin.left - 8, toY(8) + 4);
+
+// Q labels on X-axis
+ctx.textAlign = 'center';
+ctx.fillStyle = '#e74c3c';
+ctx.font = 'bold 12px Arial';
+ctx.fillText('q*=4', toX(4), margin.top + h + 32);
+
+ctx.fillStyle = '#95a5a6';
+ctx.fillText('q꜀≈5.3', toX(16/3), margin.top + h + 32);
+
+// Area labels
+ctx.font = 'bold 13px Arial';
+ctx.textAlign = 'center';
+
+ctx.fillStyle = '#2980b9';
+ctx.fillText('CS', toX(1.5), toY(6.8));
+
+ctx.fillStyle = '#d35400';
+ctx.fillText('PS', toX(1.5), toY(5));
+
+ctx.fillStyle = '#636e72';
+ctx.fillText('DWL', toX(4.5), toY(5.1));
+
+ctx.fillStyle = '#8e44ad';
+ctx.fillText('π', toX(2), toY(5.2));
+
+// MR=MC label
+ctx.fillStyle = '#27ae60';
+ctx.font = 'italic 11px Arial';
+ctx.fillText('MR=MC', toX(4) + 30, toY(4) - 8);
+</script>
+</body>
+</html>

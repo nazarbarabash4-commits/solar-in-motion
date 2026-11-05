@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff7d6"/>
+      <stop offset="40%" stop-color="#f5c842"/>
+      <stop offset="80%" stop-color="#e08c1a"/>
+      <stop offset="100%" stop-color="#c06010" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0d0f1a"/>
+      <stop offset="100%" stop-color="#050608"/>
+    </radialGradient>
+    <radialGradient id="earthGrad" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#7ec8f5"/>
+      <stop offset="100%" stop-color="#1a6bbf"/>
+    </radialGradient>
+    <radialGradient id="marsGrad" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#e8896a"/>
+      <stop offset="100%" stop-color="#b94020"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softglow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="circle-clip">
+      <circle cx="200" cy="200" r="190"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="200" cy="200" r="195" fill="#080a12"/>
+  <circle cx="200" cy="200" r="195" fill="url(#bgGrad)"/>
+
+  <!-- Stars -->
+  <g fill="white" opacity="0.6">
+    <circle cx="60" cy="55" r="1"/>
+    <circle cx="130" cy="30" r="0.8"/>
+    <circle cx="310" cy="45" r="1.2"/>
+    <circle cx="355" cy="90" r="0.8"/>
+    <circle cx="40" cy="160" r="1"/>
+    <circle cx="370" cy="150" r="0.7"/>
+    <circle cx="25" cy="280" r="1.1"/>
+    <circle cx="360" cy="300" r="0.9"/>
+    <circle cx="80" cy="350" r="0.8"/>
+    <circle cx="320" cy="360" r="1"/>
+    <circle cx="170" cy="20" r="0.7"/>
+    <circle cx="240" cy="15" r="1"/>
+    <circle cx="100" cy="310" r="0.8"/>
+    <circle cx="340" cy="240" r="0.7"/>
+  </g>
+
+  <g clip-path="url(#circle-clip)">
+    <!-- Orbit ring 1 — Mercury/Venus (inner, tilted) -->
+    <ellipse cx="200" cy="200" rx="58" ry="20"
+      fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"
+      transform="rotate(-20 200 200)"/>
+
+    <!-- Orbit ring 2 — Earth (mid) -->
+    <ellipse cx="200" cy="200" rx="105" ry="36"
+      fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"
+      transform="rotate(-15 200 200)"/>
+
+    <!-- Orbit ring 3 — Mars (outer) -->
+    <ellipse cx="200" cy="200" rx="155" ry="55"
+      fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1"
+      transform="rotate(-12 200 200)"/>
+
+    <!-- Sun glow halo -->
+    <circle cx="200" cy="200" r="48" fill="#f5c84220" filter="url(#softglow)"/>
+
+    <!-- Sun -->
+    <circle cx="200" cy="200" r="28" fill="url(#sunGlow)" filter="url(#glow)"/>
+    <circle cx="200" cy="200" r="22" fill="#f5c842"/>
+
+    <!-- Mercury (small, inner orbit) -->
+    <circle cx="252" cy="187" r="5" fill="#b0a090"/>
+
+    <!-- Earth (mid orbit, with glow) -->
+    <circle cx="296" cy="226" r="9" fill="url(#earthGrad)" filter="url(#glow)"/>
+
+    <!-- Mars (outer orbit) -->
+    <circle cx="78" cy="228" r="7" fill="url(#marsGrad)" filter="url(#glow)"/>
+
+    <!-- Saturn with ring -->
+    <g transform="translate(148, 80) rotate(-15)">
+      <ellipse cx="0" cy="0" rx="22" ry="5" fill="none" stroke="#c8aa70" stroke-width="2.5" opacity="0.7"/>
+      <circle cx="0" cy="0" r="9" fill="#d4b96a"/>
+    </g>
+  </g>
+
+  <!-- Outer border ring -->
+  <circle cx="200" cy="200" r="193" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+</svg>

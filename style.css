@@ -1,0 +1,1155 @@
+  :root {
+    --void: #050505;
+    --panel: rgba(6, 6, 6, 0.88);
+    --panel-solid: #060606;
+    --hairline: rgba(255, 255, 255, 0.16);
+    --white: #f0f0ee;
+    --gray-1: #a9a9ac;
+    --gray-2: #6c6c70;
+    --btn-fill: #e9e9e7;
+    --btn-text: #0a0a0a;
+    --active-bg: rgba(255, 255, 255, 0.08);
+    --mono: 'Space Mono', monospace;
+    --display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--void);
+    overflow: hidden;
+    font-family: var(--sans);
+    color: var(--white);
+  }
+
+  #scene-canvas { position: fixed; inset: 0; display: block; }
+
+  .glass {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    border-radius: 10px;
+  }
+
+  /* ---------- Start screen ---------- */
+  #start-overlay {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 40%, #070707 0%, var(--void) 70%);
+    z-index: 100;
+    overflow: hidden;
+  }
+  #orrery-bg {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(96vw, 1050px);
+    height: min(96vw, 1050px);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .orrery-sun {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    animation: sunPulse 3.4s ease-in-out infinite;
+  }
+  @keyframes sunPulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 0.95; transform: scale(1.25); }
+  }
+  #start-panel {
+    position: relative;
+    z-index: 2;
+    width: 440px;
+    padding: 42px 38px 34px;
+    text-align: center;
+  }
+  #start-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 14%; right: 14%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  }
+  #start-panel .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    color: var(--gray-1);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  #start-panel h1 {
+    font-family: var(--display);
+    font-size: 46px;
+    line-height: 1.12;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin-bottom: 14px;
+  }
+  #start-panel h1 .h1-sub {
+    font-weight: 400;
+    color: var(--gray-1);
+  }
+  #start-panel p {
+    font-size: 13px;
+    color: var(--gray-1);
+    line-height: 1.55;
+    margin-bottom: 30px;
+  }
+
+
+  .field-row { display: flex; gap: 12px; margin-bottom: 12px; }
+  .field { flex: 1; text-align: left; }
+  .field label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray-1);
+    margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: var(--white);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    color-scheme: dark;
+  }
+  .field input:focus { border-color: rgba(255, 255, 255, 0.32); }
+  #start-error {
+    font-size: 12px;
+    color: #d98a6a;
+    min-height: 16px;
+    margin-bottom: 8px;
+    font-family: var(--mono);
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 13px;
+    margin-top: 14px;
+    background: var(--btn-fill);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.15s ease;
+  }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  /* Guide button */
+  .btn-guide {
+    width: 100%; padding: 10px;
+    margin-top: 0; margin-bottom: 32px;
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--gray-1);
+    border-radius: 10px;
+    font-family: var(--sans); font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .btn-guide:hover { border-color: rgba(255,255,255,0.3); color: var(--white); }
+
+  /* Guide modal overlay */
+  #guide-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 200;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  #guide-overlay.open { display: flex; }
+  #guide-modal {
+    position: relative;
+    width: 100%; max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+    border-radius: 20px;
+    padding: 32px 28px 28px;
+    scrollbar-width: none;
+  }
+  #guide-modal::-webkit-scrollbar { display: none; }
+  #guide-close {
+    position: absolute; top: 16px; right: 16px;
+    background: transparent; border: none;
+    color: var(--gray-2); cursor: pointer;
+    padding: 6px; border-radius: 6px;
+    transition: color 0.15s ease;
+  }
+  #guide-close:hover { color: var(--white); }
+  .guide-eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--gray-2);
+    margin-bottom: 8px;
+  }
+  .guide-title {
+    font-family: var(--display); font-size: 24px; font-weight: 600;
+    color: var(--white); margin: 0 0 24px;
+  }
+  .guide-section {
+    display: flex; gap: 14px; align-items: flex-start;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .guide-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .guide-icon {
+    font-size: 20px; flex-shrink: 0;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+  }
+  .guide-label {
+    font-size: 13px; font-weight: 600;
+    color: var(--white); margin-bottom: 4px;
+  }
+  .guide-desc {
+    font-size: 12.5px; color: var(--gray-1);
+    line-height: 1.6;
+  }
+
+  .presets { display: flex; gap: 8px; margin-top: 14px; margin-bottom: 4px; flex-wrap: wrap; justify-content: center; }
+  .preset-chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 6px 11px;
+    border-radius: 100px;
+    border: 1px solid var(--hairline);
+    color: var(--gray-1);
+    background: transparent;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .preset-chip:hover { border-color: rgba(255, 255, 255, 0.32); color: var(--white); }
+
+  /* ---------- HUD ---------- */
+  #hud {
+    position: fixed; top: 22px; left: 22px;
+    padding: 14px 18px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.9;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  #hud .row { display: flex; gap: 10px; white-space: nowrap; }
+  #hud .label { color: var(--gray-1); }
+  #hud .value { color: var(--white); }
+  #hud .value.accent { color: var(--white); }
+
+
+  /* ---------- Legend ---------- */
+  #legend {
+    position: fixed; top: 22px; right: 22px;
+    padding: 12px 16px 0;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    max-width: 170px;
+    max-height: 78vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #legend .legend-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+  }
+  #legend .legend-scroll::-webkit-scrollbar { width: 3px; }
+  #legend .legend-scroll::-webkit-scrollbar-track { background: transparent; margin-block: 4px; }
+  #legend .legend-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+  #legend .legend-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+  #legend .legend-scroll { padding-right: 8px; }
+  #legend .hint {
+    flex-shrink: 0;
+    padding: 8px 0 12px;
+    border-top: 1px solid var(--hairline);
+    margin-top: 4px;
+  }
+  .legend-section {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--gray-2);
+    margin: 10px 0 3px; padding-top: 8px; border-top: 1px solid var(--hairline);
+  }
+  #legend .item:first-child, #legend .legend-section:first-child { margin-top: 0; border-top: none; padding-top: 0; }
+  #legend .item-sub .dot { width: 6px; height: 6px; }
+  #legend .item-sub .item-name { font-size: 11.5px; }
+  #legend .item {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 12px;
+    padding: 5px 6px;
+    margin: 0;
+    border-radius: 5px;
+    color: var(--gray-1);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  #legend .item:hover { color: var(--white); }
+  #legend .item.active { color: var(--white); }
+  #legend .item.active .dot { box-shadow: 0 0 0 3px rgba(255,255,255,0.22); }
+  #legend .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  #legend .item-name { flex: 1; }
+  #legend .info-icon {
+    font-size: 11px;
+    color: rgba(169,169,172,0.55);
+    padding: 2px 3px;
+    border-radius: 4px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  #legend .info-icon:hover { color: var(--white); background: rgba(255,255,255,0.1); }
+  #legend .hint {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: rgba(139,141,148,0.5);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--hairline);
+    line-height: 1.5;
+  }
+  #legend .legend-drag-handle { display: none; }
+  #legend .legend-scroll { display: block; }
+
+  /* Fade hint — shows when legend overflows */
+  #legend-fade {
+    position: fixed;
+    bottom: calc(22px + 1px); /* sit just above bottom border */
+    right: 22px;
+    width: 170px;
+    height: 48px;
+    background: linear-gradient(to bottom, transparent, rgba(13,13,18,0.92));
+    border-radius: 0 0 10px 10px;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  #legend-fade.visible { opacity: 1; }
+
+  /* ---------- View mode switch (Orrery / Sky) ---------- */
+  #mode-toggle {
+    position: fixed; top: 22px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 2px;
+    padding: 3px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    border-radius: 100px;
+  }
+  .mode-btn {
+    background: transparent;
+    border: none;
+    color: var(--gray-1);
+    font-family: var(--sans);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 7px 17px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  .mode-btn:hover { color: var(--white); }
+  .mode-btn.active { color: var(--white); background: var(--active-bg); }
+
+  body.mode-sky #scene-canvas { cursor: grab; }
+  body.mode-sky #scene-canvas:active { cursor: grabbing; }
+
+  /* ---------- Sky mode: observer location panel ---------- */
+  #sky-location {
+    position: fixed; bottom: 24px; left: 22px;
+    z-index: 10;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    width: 190px;
+  }
+  body.mode-sky #sky-location { display: flex; }
+
+  /* The mobile round-button variant of this panel (see the max-width:640px
+     block below) has no base "display: none" of its own — without one, on
+     screens wider than that breakpoint this div falls back to being a
+     plain static block (nothing here gives it position:fixed outside that
+     media query), so it was rendering as a stray box in normal document
+     flow at the very top-left of the page instead of staying hidden. */
+  #sky-location-mobile-wrap { display: none; }
+  .sky-location-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--gray-1);
+  }
+  .sky-location-row { display: flex; gap: 8px; }
+  .sky-location-row label {
+    flex: 1; display: flex; flex-direction: column; gap: 3px;
+    font-size: 10.5px; color: var(--gray-1);
+  }
+  .sky-location-row input[type="number"] {
+    width: 100%; box-sizing: border-box;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--hairline);
+    border-radius: 5px; color: var(--white); font-family: var(--mono); font-size: 11.5px;
+    padding: 5px 6px; color-scheme: dark;
+  }
+  #sky-use-location {
+    background: transparent; border: 1px solid var(--hairline); color: var(--white);
+    font-family: var(--sans); font-size: 11.5px; font-weight: 500;
+    padding: 7px 10px; border-radius: 6px; cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  #sky-use-location:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); }
+  /* Note: cardinal direction (N/E/S/W) labels are rendered as in-scene
+     canvas-texture sprites (via the same makeLabel() helper used for every
+     other label in this app), not DOM elements — so there's no CSS rule
+     for them here, unlike a DOM/CSS3D-based renderer. */
+
+  @media (max-width: 720px) {
+    #sky-location { bottom: 16px; left: 12px; width: 165px; padding: 10px 12px; }
+  }
+
+  /* Sky mode's clickable list of dome bodies reuses the orrery's #legend
+     panel/CSS directly (see rebuildSkyBodyLegend() in script.js) instead of
+     a separate panel, so it's pixel-identical in both desktop and the
+     mobile drawer variant. The one difference: in sky mode the list sits
+     directly over the (often bright, daytime) sky dome rather than the
+     orrery's near-black void, so it gets its own solid glass backing for
+     legibility — same treatment #sky-location already uses. */
+  body.mode-sky #legend {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    border-radius: 10px;
+    padding: 14px 16px 4px;
+  }
+
+  /* Orrery-only chrome hidden while in Sky mode. #legend / #legend-fade /
+     #legend-mobile-wrap stay visible — sky mode repopulates #legend with
+     its own body list (see above) and reuses the same mobile drawer. */
+  body.mode-sky #legend-detail,
+  body.mode-sky #layers-toggle,
+  body.mode-sky #info-panel,
+  body.mode-sky #dock .mode-sky-hide,
+  body.mode-sky #dock .divider.mode-sky-hide {
+    display: none !important;
+  }
+
+  /* #tools-toggle (the camera/screenshot icon) normally sits at right:70px
+     so it clears #layers-toggle (the gear icon) parked at the standard
+     right:22px margin beside it. With #layers-toggle hidden in Sky mode,
+     that leaves an odd 48px gap between the camera icon and the edge —
+     pull it in to the same right:22px margin every other panel uses
+     (#legend, #sky-location's bottom corner, etc). */
+  body.mode-sky #tools-toggle {
+    right: 22px;
+  }
+
+  /* ---------- Bottom control panel ---------- */
+  #dock {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 18px;
+    padding: 12px 20px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    max-width: calc(100vw - 48px);
+  }
+  #dock button {
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--white);
+    font-family: var(--sans);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 9px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    white-space: nowrap;
+  }
+  #dock button:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); }
+  #dock button.active { border-color: var(--white); color: var(--white); }
+
+  .speed-wrap { display: flex; align-items: center; gap: 10px; }
+  .speed-wrap label {
+    font-family: var(--mono); font-size: 10.5px; color: var(--gray-1);
+    letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;
+  }
+  #speed-slider {
+    width: 130px; accent-color: var(--white);
+    /* Explicit track styling so the slider still shows a visible track even
+       in browsers/OS modes where the native unfilled-track rendering is too
+       faint to see (relying on accent-color alone isn't enough everywhere). */
+    height: 16px;
+    cursor: pointer;
+  }
+  #speed-slider::-webkit-slider-runnable-track {
+    height: 3px; border-radius: 2px;
+    background: rgba(255,255,255,0.25);
+  }
+  #speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--white);
+    margin-top: -5px;
+  }
+  #speed-slider::-moz-range-track {
+    height: 3px; border-radius: 2px;
+    background: rgba(255,255,255,0.25);
+  }
+  #speed-slider::-moz-range-thumb {
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--white); border: none;
+  }
+  #speed-value {
+    font-family: var(--mono); font-size: 12px; color: var(--white);
+    width: 34px; text-align: right;
+  }
+
+  .divider { width: 1px; height: 26px; background: var(--hairline); }
+
+  /* ---------- Layers panel (toggle) ---------- */
+  #layers-toggle {
+    position: fixed; bottom: 24px; right: 22px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    /* strip glass from wrapper */
+    background: transparent !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-radius: 0 !important;
+  }
+  #layers-toggle button {
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--gray-1);
+    padding: 9px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  }
+  #layers-toggle button:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); color: var(--white); }
+  #layers-panel {
+    position: absolute; bottom: 48px; right: 0;
+    padding: 12px 14px;
+    display: none;
+    flex-direction: column;
+    gap: 9px;
+    width: 168px;
+  }
+  #layers-panel.open { display: flex; }
+  #layers-panel label {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 12.5px; color: var(--white);
+    cursor: pointer;
+  }
+  #layers-panel input[type="checkbox"] { accent-color: var(--white); }
+  .panel-divider { height: 1px; background: var(--hairline); margin: 2px 0; }
+
+  /* ---------- Tools panel (toggle) ---------- */
+  #tools-toggle {
+    position: fixed; bottom: 24px; right: 70px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    /* strip glass from wrapper */
+    background: transparent !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-radius: 0 !important;
+  }
+  #tools-toggle button#btn-tools {
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--gray-1);
+    padding: 9px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  }
+  #tools-toggle button#btn-tools:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); color: var(--white); }
+  #tools-panel {
+    position: absolute; bottom: 48px; right: 0;
+    padding: 14px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    width: 220px;
+  }
+  #tools-panel.open { display: flex; }
+  .tools-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--gray-1);
+  }
+  .tools-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tools-row > div { flex: 1; display: flex; }
+  .tools-row input[type="date"] {
+    flex: 1; width: 100%; box-sizing: border-box;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--hairline);
+    border-radius: 5px; color: var(--white); font-family: var(--mono); font-size: 11.5px;
+    padding: 6px 8px; color-scheme: dark;
+  }
+  .tools-row button {
+    background: var(--btn-fill); color: var(--btn-text); border: none; border-radius: 5px;
+    padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .tool-action {
+    background: transparent; border: 1px solid var(--hairline); color: var(--white);
+    border-radius: 5px; padding: 8px 10px; font-size: 12px; cursor: pointer;
+    font-family: var(--sans); text-align: left; transition: border-color 0.15s ease;
+  }
+  .tool-action:hover { border-color: rgba(255,255,255,0.32); }
+  #tools-msg {
+    font-family: var(--mono); font-size: 10.5px; color: var(--gray-1);
+    min-height: 14px;
+  }
+
+  /* ---------- Celestial body fact panel ---------- */
+  #info-panel {
+    position: fixed; left: 22px; top: 50%; transform: translateY(-50%) translateX(-12px);
+    width: 260px;
+    max-height: 88vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    padding: 20px 20px 18px;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  #info-panel::-webkit-scrollbar { display: none; }
+  #info-panel.open { opacity: 1; pointer-events: auto; transform: translateY(-50%) translateX(0); }
+  #info-close {
+    position: absolute; top: 8px; right: 8px;
+    background: transparent; border: none; color: var(--gray-1);
+    font-size: 13px; cursor: pointer;
+    padding: 10px;
+    min-width: 36px; min-height: 36px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #info-close:hover { color: var(--white); }
+  .info-eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .info-name {
+    font-family: var(--display); font-size: 22px; font-weight: 600;
+    margin-bottom: 10px;
+    overflow-wrap: break-word; word-break: break-word;
+  }
+  .info-blurb {
+    font-size: 12.5px; color: var(--gray-1); line-height: 1.55;
+    margin-bottom: 16px;
+    overflow-wrap: break-word;
+  }
+  .info-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px;
+    margin-bottom: 18px;
+  }
+  .info-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--gray-2);
+  }
+  .info-value {
+    font-size: 11.5px; color: var(--white); margin-top: 2px;
+    overflow-wrap: break-word; word-break: break-word;
+  }
+  .info-fly { margin-top: 0; }
+
+  /* ---------- Live Earth photo (NASA EPIC) in fact panel ---------- */
+  .info-photo-wrap {
+    margin-bottom: 16px;
+    font-family: var(--mono); font-size: 10.5px; color: var(--gray-2);
+  }
+  .info-photo {
+    width: 100%;
+    border-radius: 6px;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .info-photo-caption {
+    font-family: var(--mono); font-size: 9.5px; color: var(--gray-2);
+  }
+
+  #fade-in { opacity: 1; }
+
+  /* Escape hint */
+  #help-hint {
+    position: fixed; bottom: 24px; left: 22px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: rgba(139, 141, 148, 0.55);
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  /* ============================================================
+     Legend detail panel (mobile only — hidden on desktop)
+  ============================================================ */
+  #legend-detail {
+    display: none;
+    position: fixed;
+    z-index: 29;
+  }
+
+
+  /* ============================================================
+     Mobile legend button (hidden on desktop)
+  ============================================================ */
+  /* Wrapper div */
+  #legend-mobile-wrap {
+    display: none;
+    position: fixed;
+    z-index: 30;
+    opacity: 0;
+    /* reset glass on mobile — see @media block below */
+    transition: opacity 0.25s ease, border-color 0.15s ease, transform 0.2s ease;
+  }
+  #legend-mobile-wrap.hidden { opacity: 0 !important; pointer-events: none; transform: scale(0.88); }
+
+  /* Button inside */
+  #btn-legend-mobile {
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--gray-1);
+    padding: 0;           /* no padding — size controlled by width/height on mobile */
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  #btn-legend-mobile:hover { color: var(--white); border-color: rgba(255,255,255,0.3); }
+
+  /* CSS hamburger — 3 perfectly equal bars */
+  .ham-icon {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 15px;
+    height: 11px;         /* 3 bars × 1.5px + 2 gaps × 3.25px ≈ 11px */
+    pointer-events: none;
+  }
+  .ham-icon span {
+    display: block;
+    width: 100%;
+    height: 1.5px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+
+  /* Mobile backdrop */
+  #mobile-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 22;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  #mobile-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ============================================================
+     Tablet  (641 px – 1024 px)
+  ============================================================ */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    #start-panel { width: min(440px, calc(100vw - 48px)); }
+
+    #legend  { max-width: 155px; font-size: 11.5px; }
+    #info-panel { width: 240px; }
+
+    #dock button { font-size: 12px; padding: 8px 13px; }
+    #speed-slider { width: 100px; }
+
+    #help-hint { font-size: 10px; }
+  }
+
+  /* ============================================================
+     Phone  (≤ 640 px)
+  ============================================================ */
+  @media (max-width: 640px) {
+    #legend-fade { display: none; }
+
+    /* ---- Start screen ---- */
+    #start-panel {
+      width: calc(100vw - 32px);
+      max-width: 400px;
+      padding: 28px 20px 22px;
+    }
+    #start-panel h1 { font-size: 36px; }
+    #start-panel p  { font-size: 12.5px; }
+    .field-row { flex-direction: column; gap: 8px; }
+
+    /* maximum-scale=1 in viewport prevents iOS zoom → font-size can be small */
+    .field input {
+      font-size: 13px;
+      -webkit-appearance: none;
+      appearance: none;
+      padding: 8px 10px;
+      box-sizing: border-box;
+    }
+    .field input::-webkit-date-and-time-value {
+      text-align: left;
+    }
+    /* iOS date input text alignment */
+    .field input::-webkit-date-and-time-value {
+      text-align: left;
+    }
+    /* Preset chips: 2×2 grid on narrow screens */
+    .presets {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .preset-chip { width: 100%; text-align: center; }
+
+    /* ================================================================
+       TOP AREA
+       Left:   HUD (Date / Day)
+       Below:  Title range (smaller, muted)
+       Right:  ☰  ⤴  ⚙  (all three icon buttons in a row)
+    ================================================================ */
+
+    /* HUD: stays top-left, no changes needed */
+    #hud {
+      top: 14px; left: 14px;
+      font-size: 11px;
+      padding: 8px 12px;
+      line-height: 1.7;
+    }
+
+
+    /* ── Top-right button cluster: ☰  ⤴  ⚙ ──────────────────────
+       Same visual style as dock buttons (transparent + hairline border).
+       All three: top:12px, same width (40px), 4px gaps.
+       Positions:  ⚙ right:12   ⤴ right:56   ☰ right:100
+    ────────────────────────────────────────────────────────────── */
+
+    /* ── Strip glass from wrappers ──────────────────────────────── */
+    #layers-toggle,
+    #tools-toggle,
+    #legend-mobile-wrap {
+      top: 12px; bottom: auto;
+      /* override .glass: no bg, no border, no blur */
+      background: transparent;
+      border: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-radius: 0;
+    }
+    #layers-toggle      { right: 12px; width: fit-content; }
+    #tools-toggle       { right: 56px; width: fit-content; }
+    #legend-mobile-wrap { right: 100px; display: block; width: fit-content; }
+
+    /* Sky mode hides the gear (#layers-toggle), leaving a gap at the
+       standard right:12px edge margin — shift the remaining camera and
+       hamburger icons in to fill that slot instead of floating with extra
+       empty space past them. */
+    body.mode-sky #tools-toggle       { right: 12px; }
+    body.mode-sky #legend-mobile-wrap { right: 56px; }
+
+    /* ================================================================
+       "OBSERVING FROM" PANEL → round icon button + bottom drawer
+       It used to stay permanently open at bottom-left on every screen
+       size, which on narrow phones overlapped the dock's Play/Reset/
+       Speed row below it. On mobile it now collapses to a small button
+       (same style as the ☰ / ⤴ / ⚙ cluster) and only the button is
+       shown by default; tapping it slides the actual form up from the
+       bottom, same drawer motion as the planets list.
+    ================================================================ */
+    #sky-location-mobile-wrap {
+      position: fixed; bottom: 16px; left: 12px; z-index: 29;
+      display: none;
+      background: transparent; border: none;
+      backdrop-filter: none; -webkit-backdrop-filter: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    body.mode-sky #sky-location-mobile-wrap { display: block; }
+    /* While the drawer below is open it covers this exact corner — fade
+       the button out rather than let it sit on top of the open panel. */
+    #sky-location-mobile-wrap.hidden { opacity: 0 !important; pointer-events: none; transform: scale(0.88); }
+    #btn-sky-location-mobile {
+      width: 38px; height: 38px; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: transparent; border: 1px solid var(--hairline); color: var(--white);
+      border-radius: 6px; box-sizing: border-box; cursor: pointer;
+    }
+    #btn-sky-location-mobile:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); }
+
+    /* The form itself: hidden off-screen below the viewport by default,
+       slides in only once .drawer-open is toggled on by the button above
+       (mirrors #legend's own translateY drawer pattern just above). */
+    body.mode-sky #sky-location {
+      left: 12px; right: 12px; bottom: 16px; width: auto;
+      transform: translateY(calc(100% + 24px));
+      transition: transform 0.32s cubic-bezier(0.32,0.72,0,1);
+      z-index: 29;
+    }
+    body.mode-sky #sky-location.drawer-open { transform: translateY(0); }
+
+    /* ── Inner buttons: SAME explicit size + dock style ─────────
+       width/height pinned so ☰ can't grow wider than ⤴ / ⚙      */
+    #layers-toggle button,
+    #tools-toggle button#btn-tools,
+    #btn-legend-mobile {
+      width: 38px !important;
+      height: 38px !important;
+      padding: 0 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid var(--hairline);
+      color: var(--white);
+      border-radius: 6px;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+    #layers-toggle button:hover,
+    #tools-toggle button#btn-tools:hover,
+    #btn-legend-mobile:hover {
+      border-color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.03);
+    }
+
+    /* Panels open DOWNWARD */
+    #layers-panel {
+      top: 48px; bottom: auto;
+      right: 0; width: 200px;
+      max-width: calc(100vw - 24px);
+    }
+    #tools-panel {
+      top: 48px; bottom: auto;
+      right: 0; width: 240px;
+      max-width: calc(100vw - 24px);
+    }
+
+    /* ================================================================
+       LEGEND → bottom drawer with margins
+    ================================================================ */
+    #legend {
+      top: auto; bottom: 12px; left: 12px; right: 12px;
+      max-width: 100%; width: auto;
+      max-height: 65vh;
+      background: var(--panel);
+      border: 1px solid var(--hairline);
+      backdrop-filter: blur(14px) saturate(120%);
+      -webkit-backdrop-filter: blur(14px) saturate(120%);
+      border-radius: 20px;
+      padding: 0;
+      transform: translateY(calc(100% + 24px));
+      transition: transform 0.32s cubic-bezier(0.32,0.72,0,1), opacity 0.6s ease;
+      overflow: hidden;          /* handle stays, scroll inside */
+      display: flex;
+      flex-direction: column;
+      z-index: 28;
+    }
+    /* Fixed drag handle — never scrolls */
+    #legend .legend-drag-handle {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 14px 0 22px;
+      border-radius: 20px 20px 0 0;
+    }
+    .legend-drag-handle::after {
+      content: '';
+      display: block;
+      width: 36px; height: 4px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 2px;
+    }
+    /* Scrollable items container */
+    .legend-scroll {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: none;
+      padding-bottom: 12px;
+    }
+    .legend-scroll::-webkit-scrollbar { display: none; }
+    #legend.drawer-open { transform: translateY(0); }
+
+    /* ── Section headers (Planets, Moons, Dwarf planets…) ── */
+    #legend .legend-section {
+      font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--gray-2);
+      margin: 10px 20px 4px;
+      padding-top: 10px;
+      border-top: 1px solid var(--hairline);
+    }
+    /* First section (Planets) — no border-top, small top margin after drag handle */
+    #legend .legend-section:first-child {
+      border-top: none !important;
+      padding-top: 2px !important;
+      margin-top: 0 !important;
+    }
+
+    /* ── Items — full-width rows, same rhythm as detail fact rows ── */
+    #legend .item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 20px;
+      margin: 0;
+      font-size: 14px; font-weight: 400;
+      color: var(--gray-1);
+      border-radius: 0;
+      border: none;
+      border-bottom: none;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    #legend .item         { position: relative; }
+    #legend .item::before {
+      content: ''; position: absolute;
+      inset: 3px 8px; border-radius: 10px;
+      background: transparent;
+      transition: background 0.12s ease;
+      pointer-events: none; z-index: 0;
+    }
+    #legend .item > * { position: relative; z-index: 1; }
+    #legend .item:hover::before  { background: rgba(255,255,255,0.05); }
+    #legend .item:hover          { color: var(--white); }
+    #legend .item.active::before { background: rgba(255,255,255,0.09); }
+    #legend .item.active         { color: var(--white); }
+    #legend .item.active .dot { box-shadow: 0 0 0 3px rgba(255,255,255,0.18); }
+
+    #legend .item-sub   { padding-left: 44px; font-size: 13px; }
+    #legend .dot        { width: 9px; height: 9px; flex-shrink: 0; }
+    #legend .item-name  { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #legend .info-icon  { font-size: 13px; padding: 4px 6px; border-radius: 5px;
+                          color: rgba(169,169,172,0.45); flex-shrink: 0; }
+    #legend .info-icon:hover { color: var(--white); background: rgba(255,255,255,0.08); }
+    #legend .hint       { display: none; }
+
+    /* ================================================================
+       BACKDROP
+    ================================================================ */
+    #mobile-backdrop { display: block; }
+
+    /* ================================================================
+       LEGEND DETAIL → replaces info panel on mobile
+       Slides up from bottom, same position as legend list
+    ================================================================ */
+    #legend-detail {
+      display: block;
+      bottom: 12px; left: 12px; right: 12px; top: auto;
+      width: auto;
+      max-height: 80vh;
+      border-radius: 20px;
+      padding: 0 24px calc(32px + env(safe-area-inset-bottom, 0px));
+      transform: translateY(calc(100% + 24px));
+      transition: transform 0.34s cubic-bezier(0.32,0.72,0,1);
+      overflow-y: auto;
+      opacity: 1;
+      pointer-events: none;
+      scrollbar-width: none;
+    }
+    #legend-detail::-webkit-scrollbar { display: none; }
+    #legend-detail::before {
+      content: '';
+      display: block;
+      width: 36px; height: 4px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 2px;
+      margin: 14px auto 18px;
+    }
+    #legend-detail.open {
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+
+    /* Content inside detail */
+    #ld-eyebrow  { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+                   text-transform: uppercase; margin-bottom: 4px; }
+    #ld-name     { font-family: var(--display); font-size: 26px; font-weight: 600;
+                   margin-bottom: 8px; color: var(--white);
+                   overflow-wrap: break-word; word-break: break-word; }
+    #ld-blurb    { font-size: 13px; color: var(--gray-1); line-height: 1.55;
+                   margin-bottom: 18px; overflow-wrap: break-word; }
+    #ld-grid     { display: grid; grid-template-columns: 1fr 1fr;
+                   gap: 10px 14px; margin-bottom: 20px; }
+    #legend-detail .info-label { font-family: var(--mono); font-size: 9px;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-2); }
+    #legend-detail .info-value { font-size: 12.5px; color: var(--white);
+      margin-top: 2px; }
+    #ld-return   { margin-top: 4px; }
+
+    /* ================================================================
+       INFO PANEL → keep hidden on mobile (detail lives in legend now)
+    ================================================================ */
+    #info-panel {
+      pointer-events: none !important;
+      opacity: 0 !important;
+      transform: translateY(200%) !important;
+    }
+
+    /* ================================================================
+       DOCK → bottom center, wrapping
+    ================================================================ */
+    #dock {
+      width: calc(100% - 32px);
+      max-width: 500px;
+      flex-wrap: wrap;
+      gap: 6px 7px;
+      padding: 10px 14px 12px;
+      bottom: 16px;
+      justify-content: center;
+    }
+    #dock button        { font-size: 11.5px; padding: 7px 11px; }
+    #dock .divider      { display: none; }
+
+    /* Speed slider — pinned as its own top row */
+    .speed-wrap {
+      order: -1;
+      width: 100%;
+      justify-content: center;
+      gap: 10px;
+      padding-bottom: 4px;
+      margin-bottom: 4px;
+    }
+    .speed-wrap label   { display: block; }
+    #speed-slider       { flex: 1; max-width: 200px; }
+    #speed-value        { min-width: 36px; }
+
+    /* ---- Help hint: hidden on touch ---- */
+    #help-hint { display: none; }
+  }

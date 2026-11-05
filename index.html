@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Solar System · Orbital Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="scene-canvas"></canvas>
+
+<!-- Start screen: date selection -->
+<div id="start-overlay">
+  <svg id="orrery-bg" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true">
+    <g transform="rotate(-9 500 500)">
+      <path id="ring0" d="M 630,500 A 130,108 0 1,1 370,500 A 130,108 0 1,1 630,500 Z" fill="none" stroke="white" stroke-opacity="0.16" stroke-width="1"/>
+      <circle r="2.6" fill="white" fill-opacity="0.85"><animateMotion dur="7s" repeatCount="indefinite" rotate="auto"><mpath href="#ring0" xlink:href="#ring0"/></animateMotion></circle>
+    </g>
+    <g transform="rotate(5 500 500)">
+      <path id="ring1" d="M 705,500 A 205,172 0 1,1 295,500 A 205,172 0 1,1 705,500 Z" fill="none" stroke="white" stroke-opacity="0.13" stroke-width="1"/>
+      <circle r="2.4" fill="white" fill-opacity="0.75"><animateMotion dur="12s" repeatCount="indefinite" rotate="auto"><mpath href="#ring1" xlink:href="#ring1"/></animateMotion></circle>
+    </g>
+    <g transform="rotate(-4 500 500)">
+      <path id="ring2" d="M 788,500 A 288,240 0 1,1 212,500 A 288,240 0 1,1 788,500 Z" fill="none" stroke="white" stroke-opacity="0.11" stroke-width="1"/>
+      <circle r="2.2" fill="white" fill-opacity="0.65"><animateMotion dur="18s" repeatCount="indefinite" rotate="auto"><mpath href="#ring2" xlink:href="#ring2"/></animateMotion></circle>
+    </g>
+    <g transform="rotate(7 500 500)">
+      <path id="ring3" d="M 878,500 A 378,312 0 1,1 122,500 A 378,312 0 1,1 878,500 Z" fill="none" stroke="white" stroke-opacity="0.09" stroke-width="1"/>
+      <circle r="2" fill="white" fill-opacity="0.55"><animateMotion dur="26s" repeatCount="indefinite" rotate="auto"><mpath href="#ring3" xlink:href="#ring3"/></animateMotion></circle>
+    </g>
+    <g transform="rotate(-6 500 500)">
+      <path id="ring4" d="M 970,500 A 470,388 0 1,1 30,500 A 470,388 0 1,1 970,500 Z" fill="none" stroke="white" stroke-opacity="0.07" stroke-width="1"/>
+      <circle r="1.8" fill="white" fill-opacity="0.45"><animateMotion dur="36s" repeatCount="indefinite" rotate="auto"><mpath href="#ring4" xlink:href="#ring4"/></animateMotion></circle>
+    </g>
+    <circle class="orrery-sun" cx="500" cy="500" r="5" fill="white"/>
+  </svg>
+
+  <div id="start-panel" class="glass">
+    <div class="eyebrow">— Orbital Simulator —</div>
+    <h1>Solar System<br><span class="h1-sub">in Motion</span></h1>
+    <p>Real-time Keplerian mechanics. Set a date range and the engine computes positions and animates them smoothly, with no limit on how long the range is.</p>
+    <button class="btn-guide" id="btn-guide">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right:6px;vertical-align:middle;opacity:0.7"><circle cx="6.5" cy="6.5" r="6" stroke="currentColor" stroke-width="1.2"/><text x="6.5" y="10" text-anchor="middle" font-size="8" fill="currentColor" font-family="sans-serif">?</text></svg>
+      How it works
+    </button>
+    <div class="field-row">
+      <div class="field">
+        <label for="date-start">Start date</label>
+        <input type="date" id="date-start" value="2025-01-01">
+      </div>
+      <div class="field">
+        <label for="date-end">End date</label>
+        <input type="date" id="date-end" value="2027-01-01">
+      </div>
+    </div>
+    <div class="presets">
+      <button class="preset-chip" data-start="2025-01-01" data-end="2026-01-01">1 year</button>
+      <button class="preset-chip" data-start="2025-01-01" data-end="2035-01-01">10 years</button>
+      <button class="preset-chip" data-start="1526-01-01" data-end="2026-01-01">500 years</button>
+      <button class="preset-chip" data-start="0001-01-01" data-end="2027-01-01">~2000 years</button>
+    </div>
+    <div id="start-error"></div>
+    <button class="btn-primary" id="btn-launch">Launch simulation</button>
+  </div>
+
+</div>
+
+
+<!-- HUD -->
+<div id="hud">
+  <div class="row"><span class="label">DATE</span><span class="value accent" id="hud-date">—</span></div>
+  <div class="row"><span class="label">DAY</span><span class="value" id="hud-day">0 / 0</span></div>
+</div>
+
+<!-- View mode switch: Orrery (top-down orbital view) / Sky (planetarium view from Earth) -->
+<div id="mode-toggle" class="glass" role="tablist" aria-label="View mode">
+  <button class="mode-btn active" data-mode="orrery" role="tab" aria-selected="true">Orrery</button>
+  <button class="mode-btn" data-mode="sky" role="tab" aria-selected="false">Sky</button>
+</div>
+
+<!-- Sky mode only: observer location, so the horizon / day-night sky colour
+     and the altitude of each body match a real place on Earth. -->
+<div id="sky-location" class="glass">
+  <div class="sky-location-label">Observing from</div>
+  <div class="sky-location-row">
+    <label>Lat <input type="number" id="sky-lat" step="0.01" min="-90" max="90"></label>
+    <label>Lon <input type="number" id="sky-lon" step="0.01" min="-180" max="180"></label>
+  </div>
+  <button id="sky-use-location">Use my location</button>
+</div>
+
+<!-- Mobile-only: "Observing from" panel above collapses into this round
+     icon button (same style as the ☰ / ⤴ / ⚙ cluster) so it doesn't sit
+     permanently open and overlap the dock on narrow screens — tapping it
+     slides the full lat/lon form up from the bottom, like the planets
+     drawer. See #sky-location-mobile-wrap rules in the max-width:640px
+     block of style.css and the openLocation()/closeLocationPanel() pair
+     in initMobile() in script.js. -->
+<div id="sky-location-mobile-wrap" class="glass">
+  <button id="btn-sky-location-mobile" aria-label="Observing location">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;vertical-align:middle"><path d="M12 22s7-7.58 7-12.5A7 7 0 0 0 5 9.5C5 14.42 12 22 12 22z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="1.6"/></svg>
+  </button>
+</div>
+
+<!-- Sky mode reuses the very same #legend panel as the orrery mode, just
+     repopulated with the Sun/Moon/planets currently plotted on the dome —
+     click one to swing the camera to look straight at it (with a slight
+     zoom in) and keep tracking it; see rebuildSkyBodyLegend() in script.js. -->
+<div id="legend"></div>
+<div id="legend-fade"></div>
+
+<!-- Mobile-only: detail panel shown when a planet is tapped in the list -->
+<div id="legend-detail" class="glass">
+  <div class="info-eyebrow" id="ld-eyebrow">—</div>
+  <div class="info-name" id="ld-name">—</div>
+  <p class="info-blurb" id="ld-blurb"></p>
+  <div class="info-grid" id="ld-grid"></div>
+  <button class="btn-primary info-fly" id="ld-return" style="display:none"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;margin-right:6px;vertical-align:middle"><path d="M6 1L1 6L6 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Return to previous view</button>
+</div>
+
+
+<!-- Mobile-only: planets drawer toggle -->
+<div id="legend-mobile-wrap" class="glass">
+  <button id="btn-legend-mobile" aria-label="Show planets">
+    <span class="ham-icon"><span></span><span></span><span></span></span>
+  </button>
+</div>
+
+<!-- Backdrop for mobile drawers -->
+<div id="mobile-backdrop"></div>
+
+<div id="dock">
+  <button id="btn-change-dates"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;margin-right:5px;vertical-align:middle"><path d="M6 1L1 6L6 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Change dates</button>
+  <div class="divider"></div>
+  <button id="btn-play">Pause</button>
+  <button id="btn-reset">Reset</button>
+  <div class="divider mode-sky-hide"></div>
+  <button id="btn-view" class="mode-sky-hide">Top view</button>
+  <button id="btn-sky-exit-follow" style="display:none"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;margin-right:5px;vertical-align:middle"><path d="M6 1L1 6L6 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Exit planet view</button>
+  <div class="divider"></div>
+  <div class="speed-wrap">
+    <label>Speed</label>
+    <input type="range" id="speed-slider" min="-5" max="2.3" step="0.05" value="0">
+    <span id="speed-value">1×</span>
+  </div>
+</div>
+
+<div id="layers-toggle" class="glass">
+  <button id="btn-layers"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;vertical-align:middle"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <div id="layers-panel" class="glass">
+    <label><input type="checkbox" id="chk-trails" checked> Orbit trails</label>
+    <label><input type="checkbox" id="chk-belt" checked> Asteroid belt</label>
+    <label><input type="checkbox" id="chk-moons"> Moons</label>
+    <label><input type="checkbox" id="chk-stars" checked> Starfield</label>
+    <label><input type="checkbox" id="chk-labels" checked> Planet labels</label>
+    <div class="panel-divider"></div>
+    <label><input type="checkbox" id="chk-minor"> Dwarf planets</label>
+    <label><input type="checkbox" id="chk-comet"> Halley's Comet</label>
+    <label><input type="checkbox" id="chk-missions"> Mission paths (illustrative)</label>
+    <label><input type="checkbox" id="chk-neows"> Near-Earth asteroids (NASA live)</label>
+    <div class="panel-divider"></div>
+    <label><input type="checkbox" id="chk-lowdetail"> Low detail mode</label>
+  </div>
+</div>
+
+<div id="tools-toggle" class="glass">
+  <button id="btn-tools"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;vertical-align:middle"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="1.6"/></svg></button>
+  <div id="tools-panel" class="glass">
+    <div class="tools-label">Jump to date</div>
+    <div class="tools-row">
+      <input type="date" id="jump-date" lang="en">
+      <button id="btn-jump">Go</button>
+    </div>
+    <button class="tool-action" id="btn-save-image">Save frame as PNG</button>
+    <button class="tool-action" id="btn-copy-link">Copy link to this view</button>
+    <div id="tools-msg"></div>
+  </div>
+</div>
+
+<!-- Celestial body information panel -->
+<div id="info-panel" class="glass">
+  <button id="info-close">✕</button>
+  <div class="info-eyebrow" id="info-eyebrow">—</div>
+  <div class="info-name" id="info-name">—</div>
+  <p class="info-blurb" id="info-blurb"></p>
+  <div class="info-grid" id="info-grid"></div>
+  <button class="btn-primary info-fly" id="info-return"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;margin-right:6px;vertical-align:middle"><path d="M6 1L1 6L6 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Return to previous view</button>
+</div>
+
+</div>
+
+<!-- Guide modal — must be before scripts so JS can find it -->
+<div id="guide-overlay">
+  <div id="guide-modal" class="glass">
+    <button id="guide-close" aria-label="Close">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+    <div class="guide-eyebrow">— User Guide —</div>
+    <h2 class="guide-title">How it works</h2>
+
+    <div class="guide-section">
+      <div class="guide-icon">🗓</div>
+      <div>
+        <div class="guide-label">Set a date range</div>
+        <div class="guide-desc">Choose any start and end date — from ancient history to the far future. The engine uses real Keplerian orbital mechanics to compute exact planet positions for every day.</div>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-icon">🪐</div>
+      <div>
+        <div class="guide-label">Click any planet to track it</div>
+        <div class="guide-desc">Click a planet in the 3D scene or in the list on the right — the camera locks onto it and a fact sheet slides in with mass, distance, day length, moons, temperature and more.</div>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-icon">▶</div>
+      <div>
+        <div class="guide-label">Play, pause & speed up</div>
+        <div class="guide-desc">Use Play/Pause to animate the simulation. The Speed slider lets you go from 0.1× to 50× — watch years pass in seconds or slow down to study a single orbit.</div>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-icon">🔭</div>
+      <div>
+        <div class="guide-label">Navigate the 3D scene</div>
+        <div class="guide-desc">Rotate with left-click drag, zoom with the scroll wheel, and pan with right-click drag. Switch to Top View for a clean overhead look at all orbital paths.</div>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-icon">☰</div>
+      <div>
+        <div class="guide-label">Toggle layers</div>
+        <div class="guide-desc">The ⚙ button lets you show or hide moons, asteroid belt, dwarf planets, Halley's Comet, space missions (Voyager 1 &amp; 2, New Horizons) and live NASA near-Earth asteroid data.</div>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-icon">🛸</div>
+      <div>
+        <div class="guide-label">Live NASA data</div>
+        <div class="guide-desc">When enabled, real near-Earth asteroids fetched from the NASA NeoWs API are placed in the scene. Red dots mark potentially hazardous objects.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="textures-data.js"></script>
+<script src="sky-data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
